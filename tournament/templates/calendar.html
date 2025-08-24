@@ -1,0 +1,122 @@
+{% extends 'base.html' %}
+{% load dict_extras %}
+{% block title %}Calendar{% endblock %}
+
+{% block content %}
+<!-- Calendar Header -->
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-gray-800">{{ month_name }} {{ year }}</h2>
+        <div class="flex items-center space-x-2">
+            <a href="?year={{ year }}&month={% if month == 1 %}12{% else %}{{ month|add:"-1" }}{% endif %}" 
+               class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
+                <i class="fas fa-chevron-left"></i>
+            </a>
+            <span class="px-4 py-2 text-sm font-medium text-gray-700">Today</span>
+            <a href="?year={{ year }}&month={% if month == 12 %}1{% else %}{{ month|add:"1" }}{% endif %}" 
+               class="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-lg">
+                <i class="fas fa-chevron-right"></i>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Calendar -->
+<div class="bg-white rounded-lg shadow-sm overflow-hidden">
+    <!-- Days Header -->
+    <div class="grid grid-cols-7 bg-gray-50">
+        {% for day in "SMTWTFS" %}
+        <div class="p-4 text-center text-sm font-medium text-gray-700 border-r border-gray-200 last:border-r-0">
+            {% if day == 'S' and forloop.first %}Sunday{% endif %}
+            {% if day == 'M' %}Monday{% endif %}
+            {% if day == 'T' and forloop.counter == 3 %}Tuesday{% endif %}
+            {% if day == 'W' %}Wednesday{% endif %}
+            {% if day == 'T' and forloop.counter == 5 %}Thursday{% endif %}
+            {% if day == 'F' %}Friday{% endif %}
+            {% if day == 'S' and forloop.last %}Saturday{% endif %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Calendar Grid -->
+    <div class="grid grid-cols-7">
+        {% for week in calendar %}
+            {% for day in week %}
+            <div class="h-32 border-r border-b border-gray-200 last:border-r-0 p-2 {% if day == today.day and month == today.month and year == today.year %}bg-blue-50{% endif %}">
+                {% if day %}
+                <div class="flex justify-between items-start h-full">
+                    <span class="text-sm font-medium text-gray-900 {% if day == today.day and month == today.month and year == today.year %}text-blue-600{% endif %}">
+                        {{ day }}
+                    </span>
+                    
+                    {% if day in tournament_days %}
+                    <div class="space-y-1 flex-1 ml-2">
+                        {% for tournament in tournament_days|dict_get:day %}
+                        <div class="bg-yellow-100 text-yellow-800 text-xs px-2 py-1 rounded cursor-pointer hover:bg-yellow-200 truncate"
+                             onclick="showTournamentModal('{{ tournament.name }}', '{{ tournament.date|date:"M d, Y H:i" }}', '{{ tournament.location }}')">
+                            {{ tournament.name|truncatewords:2 }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Tournament Modal -->
+<div id="tournamentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-semibold text-gray-800">Tournament Details</h3>
+            <button onclick="closeTournamentModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div id="tournamentDetails">
+            <!-- Tournament details will be populated here -->
+        </div>
+        <div class="mt-6 flex justify-end">
+            <button onclick="closeTournamentModal()" 
+                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400">
+                Close
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTournamentModal(name, date, location) {
+    const modal = document.getElementById('tournamentModal');
+    const details = document.getElementById('tournamentDetails');
+    
+    details.innerHTML = `
+        <div class="space-y-3">
+            <div>
+                <h4 class="font-semibold text-gray-800">${name}</h4>
+            </div>
+            <div class="flex items-center text-gray-600">
+                <i class="fas fa-calendar mr-2"></i>
+                <span>${date}</span>
+            </div>
+            <div class="flex items-center text-gray-600">
+                <i class="fas fa-map-marker-alt mr-2"></i>
+                <span>${location}</span>
+            </div>
+        </div>
+    `;
+    
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+}
+
+function closeTournamentModal() {
+    const modal = document.getElementById('tournamentModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+}
+</script>
+{% endblock %}

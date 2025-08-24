@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-users text-blue-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-2xl font-bold text-gray-800">{{ total_players }}</h3>
+                <p class="text-gray-600">Total Players</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-trophy text-yellow-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-2xl font-bold text-gray-800">{{ total_tournaments }}</h3>
+                <p class="text-gray-600">Tournaments</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-lg shadow-sm p-6 card-hover">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
+                <i class="fas fa-envelope text-red-600 text-xl"></i>
+            </div>
+            <div class="ml-4">
+                <h3 class="text-2xl font-bold text-gray-800">{{ unread_messages }}</h3>
+                <p class="text-gray-600">New Messages</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Recent Players Table -->
+    <div class="bg-white rounded-lg shadow-sm">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-users mr-2 text-blue-600"></i>
+                Recent Players
+            </h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Rating</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for player in players %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if player.profile_img %}
+                                    <img src="{{ player.profile_img.url }}" alt="{{ player.name }}" class="w-8 h-8 rounded-full mr-3">
+                                {% else %}
+                                    <div class="w-8 h-8 bg-gray-300 rounded-full mr-3 flex items-center justify-center">
+                                        <i class="fas fa-user text-gray-600 text-xs"></i>
+                                    </div>
+                                {% endif %}
+                                <span class="font-medium text-gray-900">{{ player.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold bg-blue-100 text-blue-800 rounded-full">
+                                {{ player.rating }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full {% if player.availability == 'available' %}bg-green-100 text-green-800{% elif player.availability == 'busy' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                {{ player.get_availability_display }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3" class="px-6 py-4 text-center text-gray-500">No players yet</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="p-4 border-t border-gray-200">
+            <a href="{% url 'members' %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                View all players <i class="fas fa-arrow-right ml-1"></i>
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Messages Cards -->
+    <div class="bg-white rounded-lg shadow-sm">
+        <div class="p-6 border-b border-gray-200">
+            <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                <i class="fas fa-envelope mr-2 text-green-600"></i>
+                Recent Messages
+            </h3>
+        </div>
+        <div class="p-6 space-y-4">
+            {% for message in recent_messages %}
+            <div class="border border-gray-200 rounded-lg p-4 card-hover cursor-pointer">
+                <div class="flex items-center justify-between mb-2">
+                    <h4 class="font-semibold text-gray-800">{{ message.sender }}</h4>
+                    <span class="text-xs text-gray-500">{{ message.created_at|timesince }} ago</span>
+                </div>
+                <p class="text-gray-600 text-sm">{{ message.content|truncatewords:15 }}</p>
+                {% if not message.is_read %}
+                    <div class="mt-2">
+                        <span class="w-2 h-2 bg-red-500 rounded-full inline-block"></span>
+                        <span class="text-xs text-red-600 ml-1">New</span>
+                    </div>
+                {% endif %}
+            </div>
+            {% empty %}
+            <div class="text-center text-gray-500 py-8">
+                <i class="fas fa-inbox text-4xl mb-4"></i>
+                <p>No messages yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Upcoming Tournaments -->
+{% if upcoming_tournaments %}
+<div class="mt-8 bg-white rounded-lg shadow-sm">
+    <div class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+            <i class="fas fa-calendar-alt mr-2 text-purple-600"></i>
+            Upcoming Tournaments
+        </h3>
+    </div>
+    <div class="p-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {% for tournament in upcoming_tournaments %}
+            <div class="border border-gray-200 rounded-lg p-4 card-hover">
+                <h4 class="font-semibold text-gray-800 mb-2">{{ tournament.name }}</h4>
+                <p class="text-sm text-gray-600 mb-2">
+                    <i class="fas fa-calendar mr-1"></i>
+                    {{ tournament.date|date:"M d, Y" }}
+                </p>
+                <p class="text-sm text-gray-600">
+                    <i class="fas fa-map-marker-alt mr-1"></i>
+                    {{ tournament.location }}
+                </p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+
+{% block title %}Members{% endblock %}
+
+{% block content %}
+<!-- Search and Filter Bar -->
+<div class="bg-white rounded-lg shadow-sm p-6 mb-6">
+    <form method="get" class="flex flex-wrap gap-4">
+        <div class="flex-1 min-w-64">
+            <input type="text" name="search" value="{{ search_query }}" 
+                   placeholder="Search members..." 
+                   class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        </div>
+        <select name="role" class="p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            <option value="">All Roles</option>
+            <option value="player" {% if role_filter == 'player' %}selected{% endif %}>Players</option>
+            <option value="coach" {% if role_filter == 'coach' %}selected{% endif %}>Coaches</option>
+        </select>
+        <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition duration-200">
+            <i class="fas fa-search mr-2"></i>Search
+        </button>
+    </form>
+</div>
+
+<!-- Players Section -->
+{% if players %}
+<div class="mb-8">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+        <i class="fas fa-chess-pawn mr-2 text-blue-600"></i>
+        Players ({{ players.count }})
+    </h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for player in players %}
+        <div class="bg-white rounded-lg shadow-sm card-hover">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    {% if player.profile_img %}
+                        <img src="{{ player.profile_img.url }}" alt="{{ player.name }}" class="w-16 h-16 rounded-full mr-4">
+                    {% else %}
+                        <div class="w-16 h-16 bg-gray-200 rounded-full mr-4 flex items-center justify-center">
+                            <i class="fas fa-user text-gray-600 text-xl"></i>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">{{ coach.name }}</h4>
+                        <p class="text-sm text-gray-600">{{ coach.get_role_display }}</p>
+                    </div>
+                </div>
+                
+                <div class="space-y-2">
+                    {% if coach.specialty %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Specialty:</span>
+                        <span class="text-sm font-medium text-gray-800">{{ coach.specialty }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Rating:</span>
+                        <span class="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-semibold">
+                            {{ coach.rating }}
+                        </span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-600">Status:</span>
+                        <span class="px-3 py-1 text-xs font-semibold rounded-full {% if coach.availability == 'available' %}bg-green-100 text-green-800{% elif coach.availability == 'busy' %}bg-yellow-100 text-yellow-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {{ coach.get_availability_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if not players and not coaches %}
+<div class="text-center py-12">
+    <i class="fas fa-users text-6xl text-gray-300 mb-4"></i>
+    <h3 class="text-xl font-semibold text-gray-600 mb-2">No members found</h3>
+    <p class="text-gray-500">Try adjusting your search criteria or add some members.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
